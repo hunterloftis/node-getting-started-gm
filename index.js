@@ -1,13 +1,28 @@
 var express = require('express');
-var app = express();
+var gm = require('gm');
+var path = require('path');
 
-app.set('port', (process.env.PORT || 5000));
-app.use(express.static(__dirname + '/public'));
+var PORT = process.env.PORT || 3000;
 
-app.get('/', function(request, response) {
-  response.send('Hello World!');
-});
+express()
+  .use(express.static(__dirname))
+  .use(createImage)
+  .listen(PORT, onListen);
 
-app.listen(app.get('port'), function() {
-  console.log('Node app is running on port', app.get('port'));
-});
+function onListen(err) {
+  console.log('Listening on', PORT);
+}
+
+function createImage(req, res, next) {
+  var file = path.join(__dirname, 'img.png');
+  var text = req.query.text || 'hello, world!';
+  gm(525, 110, "#00ff55aa")
+    .fontSize(68)
+    .stroke("#efe", 2)
+    .fill("#555")
+    .drawText(20, 72, text)
+    .write(file, function(err){
+      if (err) throw err;
+      res.send('<html><img src="/img.png"></html>');
+    });
+}
